@@ -49,7 +49,7 @@ int main() {
     myfile.open ("markets.txt", std::ios_base::app);
 
     //generate #goods
-    int num_goods = 4;
+    int num_goods = 1000;
 
 
     //vector<Bidder> bidders(5);
@@ -58,7 +58,7 @@ int main() {
     double i = 1.;
 
     //generate bidders with val, budget and spent_vec randomly
-    int num_bidders = 4;
+    int num_bidders = 1000;
 
 
     vector<Bidder> bidders(num_bidders);
@@ -83,7 +83,7 @@ int main() {
 
     }
 */
-    int num_iterations = 2000;
+    int num_iterations = 20;
     vector<double> prices(num_goods);
     for (int it = 0; it < num_iterations; ++it) {
 
@@ -271,7 +271,7 @@ int main() {
             cout << "Integrality gap: " << std::setprecision(3)  << rd_utils[i]/max_utility[i] << "\n";
         }
         if(rd_utils[i] > max_utility[i]){
-            cout << "Integrality gap: " << std::setprecision(3)  << max_utility[i]/rd_utils[i] << "\n";
+            cout << "Integrality gap: " <<std::setprecision(3)  << max_utility[i]/rd_utils[i] << "\n";
         }
     }
 
