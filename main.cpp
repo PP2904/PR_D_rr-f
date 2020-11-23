@@ -146,21 +146,9 @@ int main() {
         max_utility[b] *= bidders[b].budget;
     }
 
-    // save utility from start
-    vector<double> val_start(num_bidders);
-    for(int b=0; b< num_bidders; ++b) {
-        for (int i = 0; i < num_goods; ++i) {
-            val_start[b] = bidders[b].valuation[i];
-        }
-    }
 
 
-    //ich benötige die utility zu Beginn des Programms, um diese am Ende für die gerundeten Kanten mal 1 zu nehmen
-    // und mit der max_utility aus dem fraktionalen Teil zu Vergleichen
 
-    for(int i=0; i < num_bidders; ++i) {
-        cout << utility[i] << endl;
-    }
 
     //supply umbennenen und dafür
     cout << endl;
@@ -180,9 +168,9 @@ int main() {
         cout << "Max Utility: " << std::setprecision(4) << max_utility[i] << endl;
     }
 
-    //writing to txt file
-    /*ofstream myfile;
-    myfile.open ("markets.txt", std::ios_base::app);*/
+ /*   //writing to txt file
+    *//*ofstream myfile;
+    myfile.open ("markets.txt", std::ios_base::app);*//*
     myfile << endl;
     myfile << "D/MaxUtil: " << endl;
     for (int j = 0; j < num_goods; ++j) {
@@ -195,7 +183,7 @@ int main() {
         myfile << "Demand: " << demand << endl;
         myfile << "\n";
     }
-
+*/
 
 
     myfile.close();
@@ -260,6 +248,10 @@ int main() {
     }
     cout << "\n";
 
+
+    vector<double> rd_utils(num_bidders);
+
+
     /*** Gebe Werte aus, die ungleich 0 sind zählen zu Max_utility_neu ***/
 
     cout << "Filter: \n";
@@ -267,10 +259,26 @@ int main() {
         for (int j=0; j < num_goods; ++j) {
             if (graph[i][j]==1) {
                 cout << "Valuation Bidder " << i << " for Good " << j << ": " << bidders[i].valuation[j] << " \n";
+                rd_utils[i] = rd_utils[i] + (graph[i][j]*bidders[i].valuation[j]);
             }
         }
-
     }
+
+    for(int i=0; i < num_bidders; ++i) {
+        cout << "Max Utility filtered & rounden für Bidder " << i << ": " << rd_utils[i] << "\n";
+
+        if(rd_utils[i] <= max_utility[i]){
+            cout << "Integrality gap: " << std::setprecision(3)  << rd_utils[i]/max_utility[i] << "\n";
+        }
+        if(rd_utils[i] > max_utility[i]){
+            cout << "Integrality gap: " << std::setprecision(3)  << max_utility[i]/rd_utils[i] << "\n";
+        }
+    }
+
+
+
+
+
 
 
 
