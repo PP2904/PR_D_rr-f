@@ -40,20 +40,40 @@ ostream &operator<<(ostream &os, const Bidder &b) {
 int random_number(int lb, int ub) {
     static unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     static std::mt19937 engine(seed);
-    return (engine() % (ub-lb+1))+lb;
+    return (engine() % (ub - lb + 1)) + lb;
 }
 
 int main() {
 
-    int given_iter = 5;
+    int given_iter = 50;
+    ofstream myfile;
+    myfile.open("markets.txt", std::ios_base::app);
 
-    for(int iter = 1; iter < given_iter; iter ++) {
+    //sum_gap über alles aufsummiert
+    double sum_overall = 0.0;
+
+    //avg über alle iterations = given_iter
+    double final_avg_gap = 0.0;
 
 
+
+    for (int iter = 1; iter <= given_iter; iter++) {
+
+        double sum_gap = 0.0;
+
+        // Infimum avg gap pro iteration, also pro 1 given_iter (1x Handel)
+        double inf_avg_gap;
+
+
+
+
+        if (iter == 1) {
+            inf_avg_gap = 0.0;
+        }
 
 
         //generate #goods
-        int num_goods = 30;
+        int num_goods = 4;
 
 
         //vector<Bidder> bidders(5);
@@ -62,7 +82,7 @@ int main() {
         double i = 1.;
 
         //generate bidders with val, budget and spent_vec randomly
-        int num_bidders = 30;
+        int num_bidders = 4;
 
 
         vector<Bidder> bidders(num_bidders);
@@ -74,21 +94,19 @@ int main() {
             bidders[k].budget = random_number(0, 11) + random_number(0, 31);
             bidders[k].spent.resize(num_goods, bidders[0].budget / (double) num_goods);
         }
-        /*//srand ( time(NULL) );
-        for (int k = 0; k < num_bidders; ++k) {
-            //values have no meaning, just randomizing
-            double r1 = random_number(0,11);
-            double r2 = random_number(0,31);
-            double r3 = random_number(0,8);
 
-            bidders[k].valuation = {(r1+r2/r3)* i, (r1+r2/r3) * i, (r1+r2/r3) * i};
-            bidders[k].budget = r1+r2;
-            bidders[k].spent.resize(num_goods, bidders[0].budget / (double) num_goods);
-
-        }
-    */
-        int num_iterations = 20;
+        // Anzahl Iterations pro 1 Handel (1x PR_Dynamics Algorithmus ausführen)
+        int num_iterations = 100;
         vector<double> prices(num_goods);
+
+        /*//int gap summe über alle iterations eines einzelnen Experiments/Handels
+        double sum_gap;*/
+
+        //dursch. Integrality Gap pro 1 Handel/1 Experiment
+        double avg_intGap = 0.0;
+
+
+        //wiederholung für PR_D Algorithmus
         for (int it = 0; it < num_iterations; ++it) {
 
             //in jeder iteration werden die preise des guts i auf die menge der preise,
@@ -146,9 +164,9 @@ int main() {
             }
 
 
-            ofstream myfile;
+            /*ofstream myfile;
             myfile.open("markets.txt", std::ios_base::app);
-
+*/
 
             //supply umbennenen und dafür
             cout << endl;
@@ -166,7 +184,7 @@ int main() {
 
             for (int i = 0; i < num_bidders; ++i) {
                 cout << "Max Utility: " << std::setprecision(4) << max_utility[i] << endl;
-                myfile << "Max Utility: " << std::setprecision(4) << max_utility[i] << endl;
+                //myfile << "Max Utility: " << std::setprecision(4) << max_utility[i] << endl;
             }
 
 
@@ -234,7 +252,7 @@ int main() {
 
             vector<double> rd_utils(num_bidders);
 
-            double sum_gap = 0.0;
+
 
 
             /*** Gebe Werte aus, die ungleich 0 sind zählen zu Max_utility_neu ***/
@@ -252,31 +270,69 @@ int main() {
 
             for (int i = 0; i < num_bidders; ++i) {
                 cout << "Max Utility filtered & rounden für Bidder " << i << ": " << rd_utils[i] << "\n";
-                myfile << "Max Utility filtered & rounden für Bidder " << i << ": " << rd_utils[i] << "\n";
+                //myfile << "Max Utility filtered & rounden für Bidder " << i << ": " << rd_utils[i] << "\n";
 
                 if (rd_utils[i] <= max_utility[i]) {
                     cout << "Integrality gap: " << std::setprecision(3) << rd_utils[i] / max_utility[i] << "\n";
-                    myfile << "Integrality gap: " << std::setprecision(3) << rd_utils[i] / max_utility[i] << "\n";
+                    //myfile << "Integrality gap: " << std::setprecision(3) << rd_utils[i] / max_utility[i] << "\n";
                     sum_gap = sum_gap + (rd_utils[i] / max_utility[i]);
 
                 }
                 if (rd_utils[i] > max_utility[i]) {
                     cout << "Integrality gap: " << std::setprecision(3) << max_utility[i] / rd_utils[i] << "\n";
-                    myfile << "Integrality gap: " << std::setprecision(3) << max_utility[i] / rd_utils[i] << "\n";
+                    //myfile << "Integrality gap: " << std::setprecision(3) << max_utility[i] / rd_utils[i] << "\n";
                     sum_gap = sum_gap + (max_utility[i] / rd_utils[i]);
                 }
+
             }
 
-            myfile << endl;
-            myfile << "Die dursch. Integrality Gap ist: " << (sum_gap / num_bidders) << "\n";
-            myfile << "-------------------------------------------------------" << endl;
-            myfile.close();
+
+            //innerhalb iterations-schleife = 1x Experiment ausgeführt
 
 
         }
 
+
+
+
+        //durschnittliche Integrality Gap
+        avg_intGap = (sum_gap / (num_bidders * num_iterations));
+
+        //TODO print für int_gap
+        //myfile << endl;
+        //print out des Avg in file
+       // myfile << avg_intGap << "\n";
+
+
+
+        sum_overall = sum_gap + sum_overall;
+
+
+        //falls aktuelle sum_gap/num_bidders größer -> ersetze inf_avg_gap mit dem Wert
+        if (inf_avg_gap < avg_intGap) {
+            inf_avg_gap = avg_intGap;
+        }
+
+
+        if (iter == given_iter) {
+            myfile << "-------------------------------------------------------" << "\n";
+            myfile << "largest int_gap: " << inf_avg_gap;
+            myfile << "\n";
+            myfile << "Anzahl Bidder: " << num_bidders << ", " << "Anzahl Goods: " << num_goods << ", "
+                   << "Anzahl Iterations: " << num_iterations << "\n";
+            final_avg_gap = sum_overall / (num_bidders * num_iterations * given_iter);
+            myfile << "\n";
+            myfile << "Overall Avg Int Gap: " << final_avg_gap << "\n";
+            myfile << "-------------------------------------------------------" << "\n";
+        }
+
+        //Innerhalb Experiment Wdh Schleife
     }
-        return 0;
+
+
+    //myfile.close();
+
+    return 0;
 
 
 }
