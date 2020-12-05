@@ -100,6 +100,7 @@ int main() {
 
     myfile2 << "num_goods: " << num_goods << ", " << "num_bidder: " << num_bidders << ", " << "num_iterations: "
            << num_iterations << ", " << "repetitions: " << given_iter << ", " << "\n";
+    myfile2 << "rounded util | frac util" << "\n";
 
     for (int iter = 1; iter <= given_iter; iter++) {
 
