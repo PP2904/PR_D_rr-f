@@ -48,7 +48,11 @@ int main() {
 
 
     ofstream myfile;
-    myfile.open("results.txt", std::ios_base::app);
+    myfile.open("allocs.txt", std::ios_base::app);
+
+    ofstream myfile2;
+    myfile2.open("intgap.txt", std::ios_base::app);
+
 
     //sum_gap über alles aufsummiert
     double sum_overall = 0.0;
@@ -94,6 +98,8 @@ int main() {
     myfile << "num_goods: " << num_goods << ", " << "num_bidder: " << num_bidders << ", " << "num_iterations: "
            << num_iterations << ", " << "repetitions: " << given_iter << ", " << "\n";
 
+    myfile2 << "num_goods: " << num_goods << ", " << "num_bidder: " << num_bidders << ", " << "num_iterations: "
+           << num_iterations << ", " << "repetitions: " << given_iter << ", " << "\n";
 
     for (int iter = 1; iter <= given_iter; iter++) {
 
@@ -106,8 +112,8 @@ int main() {
         for (int k = 0; k < num_bidders; ++k) {
             bidders[k].valuation.resize(num_goods);
             //valuation pro Gut und Bidder
-            for (auto &v: bidders[k].valuation) v = (random_number(0, 11) + random_number(0, 15)) * i;
-            bidders[k].budget = random_number(0, 11) + random_number(0, 31);
+            for (auto &v: bidders[k].valuation) v = (random_number(1, 11) + random_number(1, 15)) * i;
+            bidders[k].budget = random_number(1, 11) + random_number(1, 31);
             bidders[k].spent.resize(num_goods, bidders[0].budget / (double) num_goods);
         }
 
@@ -229,7 +235,7 @@ int main() {
             cout << "\n";
 
 
-            vector<double> rd_utils(num_bidders);
+            vector<double> rd_max_utility(num_bidders);
 
 
 
@@ -244,28 +250,31 @@ int main() {
                              << " \n";
                         cout << "budget bidder " << i << ": " << bidders[i].budget << "\n";
                         cout << "price good " << j << ": " << prices[j] << "\n";
-                        rd_utils[i] = rd_utils[i] + (graph[i][j] * bidders[i].valuation[j]);
+                        rd_max_utility[i] = rd_max_utility[i] + (graph[i][j] * bidders[i].valuation[j]);
                     }
                 }
+                myfile2 << rd_max_utility[i] << " | ";
+                myfile2 << std::setprecision(3)  << max_utility[i] << "\n";
             }
 
 
             for (int i = 0; i < num_bidders; ++i) {
-                cout << "Max Utility filtered & rounded für Bidder " << i << ": " << rd_utils[i] << "\n";
-                //myfile << "Max Utility filtered & rounden für Bidder " << i << ": " << rd_utils[i] << "\n";
+                cout << "Max Utility filtered & rounded für Bidder " << i << ": " << rd_max_utility[i] << "\n";
+                //myfile << "Max Utility filtered & rounden für Bidder " << i << ": " << rd_max_utility[i] << "\n";
 
                 //Berechnen hier die Integrality Gaps:
 
-//                if (rd_utils[i] <= max_utility[i]) {
-                cout << "Integrality gap: " << std::setprecision(3) << rd_utils[i] / max_utility[i] << "\n";
-                //myfile << "Integrality gap: " << std::setprecision(3) << rd_utils[i] / max_utility[i] << "\n";
-                sum_gap = sum_gap + (rd_utils[i] / max_utility[i]);
+                if (rd_max_utility[i] <= max_utility[i]) {
+                cout << "Integrality gap: " << std::setprecision(3) << rd_max_utility[i] / max_utility[i] << "\n";
+                //myfile << "Integrality gap: " << std::setprecision(3) << rd_max_utility[i] / max_utility[i] << "\n";
+                sum_gap = sum_gap + (rd_max_utility[i] / max_utility[i]);
+               }
 
-//                }
-                /* if (rd_utils[i] > max_utility[i]) {
-                     cout << "Integrality gap: " << std::setprecision(3) << max_utility[i] / rd_utils[i] << "\n";
-                     //myfile << "Integrality gap: " << std::setprecision(3) << max_utility[i] / rd_utils[i] << "\n";
-                     sum_gap = sum_gap + (max_utility[i] / rd_utils[i]);
+
+                /* if (rd_max_utility[i] > max_utility[i]) {
+                     cout << "Integrality gap: " << std::setprecision(3) << max_utility[i] / rd_max_utility[i] << "\n";
+                     //myfile << "Integrality gap: " << std::setprecision(3) << max_utility[i] / rd_max_utility[i] << "\n";
+                     sum_gap = sum_gap + (max_utility[i] / rd_max_utility[i]);
                  }*/
 
                 myfile << sum_gap << ", ";
