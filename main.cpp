@@ -75,11 +75,13 @@ int main() {
     cout << "Number Goods: ";
     cin >> num_goods;
 
-    num_bidders = num_goods;
+    //num_bidders
+    cout << "Number Bidders: ";
+    cin >> num_bidders;
 
 
     //multiplier for valuation
-    double i = 1.;
+    double valMultiplier = 1.;
 
     //generate bidders with val, budget and spent_vec randomly
     //int num_bidders = 4;
@@ -113,7 +115,7 @@ int main() {
         for (int k = 0; k < num_bidders; ++k) {
             bidders[k].valuation.resize(num_goods);
             //valuation pro Gut und Bidder
-            for (auto &v: bidders[k].valuation) v = (random_number(1, 11) + random_number(1, 15)) * i;
+            for (auto &v: bidders[k].valuation) v = (random_number(1, 11) + random_number(1, 15)) * valMultiplier;
             bidders[k].budget = random_number(1, 11) + random_number(1, 31);
             bidders[k].spent.resize(num_goods, bidders[0].budget / (double) num_goods);
         }
@@ -189,10 +191,11 @@ int main() {
 
             cout << endl;
             cout << "Fraktionales/optimales Ergebnis: ";
+            //myfile2 << "Max Utility / rounded Max Utility" << "\n";
             cout << endl;
             for (int i = 0; i < num_bidders; ++i) {
                 cout << "Max Utility: " << std::setprecision(4) << max_utility[i] << endl;
-                //myfile << "Max Utility: " << std::setprecision(4) << max_utility[i] << endl;
+                //myfile2 << std::setprecision(4) << max_utility[i] << "\n";
             }
 
 
@@ -205,7 +208,9 @@ int main() {
                 }
             }
 
-            /*** randomized rounding: wir runden alle Kantengewichte, bis auf eines, zu 0.
+            /***
+             *
+             * randomized rounding: wir runden alle Kantengewichte, bis auf eines, zu 0.
              * Das eine (zufällige) wird zu 1 gerundet und dann mit dem Nutzen des Guts, welches
              * über diese Kante mit dem Bidder verbunden ist, multipliziert;
              *
@@ -222,7 +227,7 @@ int main() {
                 for (int i = 0; i < num_bidders; ++i) {
                     graph[i][j] = 0;
                 }
-                int num = random_number(0, (num_goods) - 1);
+                int num = random_number(0, (num_bidders) - 1);
                 graph[num][j] = 1;
             }
 
@@ -243,33 +248,42 @@ int main() {
 
             /*** Gebe Werte aus. Die ungleich 0, zählen zu Max_utility_neu ***/
 
-            cout << "Filter: \n";
+
+            //cout << "\n";
+            //cout << "Filter: \n";
             for (int i = 0; i < num_bidders; ++i) {
                 for (int j = 0; j < num_goods; ++j) {
                     if (graph[i][j] == 1) {
-                        cout << "Valuation Bidder " << i << " for Good " << j << ": " << bidders[i].valuation[j]
-                             << " \n";
-                        cout << "budget bidder " << i << ": " << bidders[i].budget << "\n";
-                        cout << "price good " << j << ": " << prices[j] << "\n";
+                        //cout << "Valuation Bidder " << i << " for Good " << j << ": " << bidders[i].valuation[j]
+                            // << " \n";
+                        //cout << "budget bidder " << i << ": " << bidders[i].budget << "\n";
+                        //cout << "price good " << j << ": " << prices[j] << "\n";
                         rd_max_utility[i] = rd_max_utility[i] + (graph[i][j] * bidders[i].valuation[j]);
                     }
                 }
-                myfile2 << rd_max_utility[i] << " | ";
-                myfile2 << std::setprecision(3)  << max_utility[i] << "\n";
+                if (rd_max_utility[i] <= max_utility[i]) {
+                    //myfile2 << rd_max_utility[i] << " | ";
+                    //myfile2 << std::setprecision(3) << max_utility[i] << "\n";
+                }
             }
 
 
+            cout << "\n";
+            cout << "Rounded Utilities: \n";
             for (int i = 0; i < num_bidders; ++i) {
-                cout << "Max Utility filtered & rounded für Bidder " << i << ": " << rd_max_utility[i] << "\n";
-                //myfile << "Max Utility filtered & rounden für Bidder " << i << ": " << rd_max_utility[i] << "\n";
+                cout << "Max Utility rounded for Bidder " << i << ": " << rd_max_utility[i] << " | ";
+                //myfile2 << rd_max_utility[i] << "\n";
+
 
                 //Berechnen hier die Integrality Gaps:
-
                 if (rd_max_utility[i] <= max_utility[i]) {
                 cout << "Integrality gap: " << std::setprecision(3) << rd_max_utility[i] / max_utility[i] << "\n";
                 //myfile << "Integrality gap: " << std::setprecision(3) << rd_max_utility[i] / max_utility[i] << "\n";
-                sum_gap = sum_gap + (rd_max_utility[i] / max_utility[i]);
-               }
+                }
+
+                else{
+                    cout << "\n";
+                }
 
 
                 /* if (rd_max_utility[i] > max_utility[i]) {
@@ -284,6 +298,24 @@ int main() {
                 if (i == num_bidders - 1) {
                     myfile << "\n";
                 }
+
+            }
+
+            if(it ==(num_iterations -1)){
+                for (int i = 0; i < num_bidders; ++i) {
+                    if (rd_max_utility[i] <= max_utility[i]) {
+                        myfile2 << rd_max_utility[i] << " | " << max_utility[i] << "\n";
+                    }
+                }
+
+                myfile2 << "\n";
+
+                for (int i = 0; i < num_bidders; ++i) {
+                        myfile2 << rd_max_utility[i] << " | " << max_utility[i] << "\n";
+                    }
+
+                myfile2 << "\n";
+
 
             }
 
